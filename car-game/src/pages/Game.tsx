@@ -4,9 +4,9 @@ import { Play, AlertCircle, RotateCcw } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../auth';
 
-// ========================
+
 // TYPES & CONSTANTS
-// ========================
+
 
 interface HeartChallenge {
   imageUrl: string;
@@ -42,9 +42,9 @@ const BARRIER_SPAWN_RATE = 0.02;
 // API
 const HEART_API = 'https://marcconrad.com/uob/heart/api.php?out=json&base64=no';
 
-// ========================
+
 // EVENT BUS (Event-Driven)
-// ========================
+
 
 type GameEvent =
   | { type: 'CRASH' }
@@ -68,9 +68,9 @@ class EventBus {
 
 const eventBus = new EventBus();
 
-// ========================
+
 // GAME COMPONENT
-// ========================
+
 
 const Game: React.FC = () => {
   const { isLoggedIn } = useAuth();
@@ -88,9 +88,9 @@ const Game: React.FC = () => {
     userAnswer: '',
   });
 
-  // ========================
+ 
   // KEYBOARD INPUT (Event-Driven)
-  // ========================
+ 
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     if (gameState.phase !== 'playing') return;
@@ -108,9 +108,9 @@ const Game: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
 
-  // ========================
+
   // HEART API SERVICE (Interoperability)
-  // ========================
+
 
   const fetchHeartChallenge = async (): Promise<HeartChallenge> => {
     try {
@@ -127,9 +127,9 @@ const Game: React.FC = () => {
     }
   };
 
-  // ========================
+
   // GAME LOOP
-  // ========================
+
 
   const gameLoop = useCallback(() => {
     const canvas = canvasRef.current;
@@ -217,9 +217,9 @@ const Game: React.FC = () => {
     };
   }, [gameLoop, gameState.phase]);
 
-  // ========================
+
   // EVENT LISTENERS (Event-Driven)
-  // ========================
+ 
 
   useEffect(() => {
     const handleCrash = async () => {
@@ -270,9 +270,9 @@ const Game: React.FC = () => {
     return () => {};
   }, []);
 
-  // ========================
+ 
   // START GAME
-  // ========================
+
 
   const startGame = () => {
     barriersRef.current = [];
@@ -287,9 +287,9 @@ const Game: React.FC = () => {
     });
   };
 
-  // ========================
+
   // HEART CHALLENGE SUBMIT
-  // ========================
+
 
   const submitHeartAnswer = () => {
     const answer = parseInt(gameState.userAnswer);
@@ -300,9 +300,9 @@ const Game: React.FC = () => {
     }
   };
 
-  // ========================
+
   // RENDER
-  // ========================
+
 
   if (!isLoggedIn) return null;
 
@@ -325,13 +325,13 @@ const Game: React.FC = () => {
       {gameState.phase === 'ready' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-red-500 to-pink-500">
               Heart Drive
             </h1>
             <p className="text-2xl text-gray-300 mb-8">Use ← → to dodge barriers!</p>
             <button
               onClick={startGame}
-              className="group inline-flex items-center px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-red-600 to-pink-600 rounded-full hover:from-red-500 hover:to-pink-500 transform hover:scale-110 transition-all shadow-xl"
+              className="group inline-flex items-center px-10 py-5 text-xl font-bold text-white bg-linear-to-r from-red-600 to-pink-600 rounded-full hover:from-red-500 hover:to-pink-500 transform hover:scale-110 transition-all shadow-xl"
             >
               <Play className="mr-3 group-hover:animate-pulse" size={28} />
               PLAY
@@ -373,7 +373,7 @@ const Game: React.FC = () => {
             />
             <button
               onClick={submitHeartAnswer}
-              className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition"
+              className="w-full py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition"
             >
               Submit Answer
             </button>
@@ -390,7 +390,7 @@ const Game: React.FC = () => {
             <p className="text-lg text-gray-400 mb-8">Wrong heart count!</p>
             <button
               onClick={() => eventBus.publish({ type: 'RESTART' })}
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-full hover:from-blue-500 hover:to-indigo-500 transition shadow-lg"
+              className="inline-flex items-center px-8 py-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-full hover:from-blue-500 hover:to-indigo-500 transition shadow-lg"
             >
               <RotateCcw className="mr-2" />
               Play Again
