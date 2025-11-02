@@ -1,16 +1,16 @@
-// car-game/src/pages/Game.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, AlertCircle, RotateCcw } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../auth';
-
+import { fetchHeartChallenge } from '../api/HeartAPI';
+import type { HeartChallenge } from '../api/HeartAPI';
 
 // TYPES & CONSTANTS
 
-
-interface HeartChallenge {
-  imageUrl: string;
-  solution: number;
+interface Barrier {
+  id: number;
+  lane: number;
+  y: number;
+  passed: boolean;
 }
 
 interface GameState {
@@ -20,13 +20,6 @@ interface GameState {
   barriers: Barrier[];
   challenge: HeartChallenge | null;
   userAnswer: string;
-}
-
-interface Barrier {
-  id: number;
-  lane: number;
-  y: number;
-  passed: boolean;
 }
 
 // Game Config
@@ -39,12 +32,8 @@ const BARRIER_HEIGHT = 60;
 const ROAD_SPEED = 5;
 const BARRIER_SPAWN_RATE = 0.02;
 
-// API
-const HEART_API = 'https://marcconrad.com/uob/heart/api.php?out=json&base64=no';
 
-
-// EVENT BUS (Event-Driven)
-
+// EVENT BUS (unchanged)
 
 type GameEvent =
   | { type: 'CRASH' }
@@ -71,7 +60,6 @@ const eventBus = new EventBus();
 
 // GAME COMPONENT
 
-
 const Game: React.FC = () => {
   const { isLoggedIn } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -88,49 +76,31 @@ const Game: React.FC = () => {
     userAnswer: '',
   });
 
- 
-  // KEYBOARD INPUT (Event-Driven)
- 
 
-  const handleKeyPress = useCallback((e: KeyboardEvent) => {
-    if (gameState.phase !== 'playing') return;
+  // KEYBOARD INPUT
+ 
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (gameState.phase !== 'playing') return;
 
-    if (e.key === 'ArrowLeft' && gameState.carLane > 0) {
-      setGameState((s) => ({ ...s, carLane: s.carLane - 1 }));
-    }
-    if (e.key === 'ArrowRight' && gameState.carLane < LANES - 1) {
-      setGameState((s) => ({ ...s, carLane: s.carLane + 1 }));
-    }
-  }, [gameState.phase, gameState.carLane]);
+      if (e.key === 'ArrowLeft' && gameState.carLane > 0) {
+        setGameState((s) => ({ ...s, carLane: s.carLane - 1 }));
+      }
+      if (e.key === 'ArrowRight' && gameState.carLane < LANES - 1) {
+        setGameState((s) => ({ ...s, carLane: s.carLane + 1 }));
+      }
+    },
+    [gameState.phase, gameState.carLane]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
 
-
-  // HEART API SERVICE (Interoperability)
-
-
-  const fetchHeartChallenge = async (): Promise<HeartChallenge> => {
-    try {
-      const res = await axios.get(HEART_API);
-      const { question, solution } = res.data;
-      return { imageUrl: question, solution: parseInt(solution) };
-    } catch (err) {
-      console.error('Heart API failed:', err);
-      // Fallback image
-      return {
-        imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGxbPSIjYjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SGVhcnQgQVBJIEZhaWxlZDwvdGV4dD48L3N2Zz4=',
-        solution: 3,
-      };
-    }
-  };
-
-
+ 
   // GAME LOOP
-
-
+ 
   const gameLoop = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || gameState.phase !== 'playing') return;
@@ -186,7 +156,7 @@ const Game: React.FC = () => {
         Math.abs(carX - laneX) < (CAR_WIDTH + BARRIER_WIDTH) / 2
       ) {
         eventBus.publish({ type: 'CRASH' });
-        b.passed = true; // Prevent multiple triggers
+        b.passed = true;
       }
 
       // Score
@@ -218,9 +188,8 @@ const Game: React.FC = () => {
   }, [gameLoop, gameState.phase]);
 
 
-  // EVENT LISTENERS (Event-Driven)
+  // EVENT LISTENERS
  
-
   useEffect(() => {
     const handleCrash = async () => {
       setGameState((s) => ({ ...s, phase: 'crashed' }));
@@ -270,10 +239,9 @@ const Game: React.FC = () => {
     return () => {};
   }, []);
 
+  
+  // GAME CONTROL
  
-  // START GAME
-
-
   const startGame = () => {
     barriersRef.current = [];
     scoreRef.current = 0;
@@ -287,12 +255,8 @@ const Game: React.FC = () => {
     });
   };
 
-
-  // HEART CHALLENGE SUBMIT
-
-
   const submitHeartAnswer = () => {
-    const answer = parseInt(gameState.userAnswer);
+    const answer = parseInt(gameState.userAnswer, 10);
     if (answer === gameState.challenge?.solution) {
       eventBus.publish({ type: 'HEART_ANSWER_CORRECT' });
     } else {
@@ -302,8 +266,7 @@ const Game: React.FC = () => {
 
 
   // RENDER
-
-
+ 
   if (!isLoggedIn) return null;
 
   return (
@@ -317,7 +280,9 @@ const Game: React.FC = () => {
       {/* Score */}
       {gameState.phase === 'playing' && (
         <div className="absolute top-6 left-6 z-20 bg-gray-800 px-4 py-2 rounded-lg shadow-lg">
-          <p className="text-xl font-bold text-white">Score: <span className="text-red-400">{gameState.score}</span></p>
+          <p className="text-xl font-bold text-white">
+            Score: <span className="text-red-400">{gameState.score}</span>
+          </p>
         </div>
       )}
 
@@ -386,7 +351,9 @@ const Game: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
             <h2 className="text-5xl font-bold text-red-500 mb-4">Game Over!</h2>
-            <p className="text-2xl text-white mb-2">Final Score: <span className="text-yellow-400">{gameState.score}</span></p>
+            <p className="text-2xl text-white mb-2">
+              Final Score: <span className="text-yellow-400">{gameState.score}</span>
+            </p>
             <p className="text-lg text-gray-400 mb-8">Wrong heart count!</p>
             <button
               onClick={() => eventBus.publish({ type: 'RESTART' })}
