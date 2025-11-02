@@ -36,7 +36,7 @@ const SignUp: React.FC = () => {
         email,
         password,
       });
-      navigate('/login'); // Redirect to login
+      navigate('/login');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Failed to sign up. Please try again.');

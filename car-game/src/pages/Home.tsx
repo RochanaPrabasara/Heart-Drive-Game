@@ -4,7 +4,6 @@ import { PlayIcon } from 'lucide-react';
 const Home: React.FC = () => {
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-start bg-gray-900 relative overflow-hidden pt-28">
-      {/* Background glowing circles */}
       <div className="absolute w-full h-full">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-500 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
         <div
@@ -13,7 +12,6 @@ const Home: React.FC = () => {
         ></div>
       </div>
 
-      {/* Main content */}
       <div className="z-10 text-center px-4 flex flex-col items-center">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
           Heart Drive 
@@ -32,7 +30,7 @@ const Home: React.FC = () => {
           LOG IN TO PLAY
         </a>
 
-        {/* Feature cards */}
+
         <div className="mt-12 flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
           {[
             { title: 'DRIVE', text: 'Navigate through challenging roads' },

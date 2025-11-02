@@ -4,7 +4,6 @@ import { useAuth } from '../auth';
 import { fetchHeartChallenge } from '../api/HeartAPI';
 import type { HeartChallenge } from '../api/HeartAPI';
 
-// TYPES & CONSTANTS
 
 interface Barrier {
   id: number;
@@ -22,7 +21,6 @@ interface GameState {
   userAnswer: string;
 }
 
-// Game Config
 const LANES = 3;
 const LANE_WIDTH = 120;
 const CAR_WIDTH = 60;
@@ -32,8 +30,6 @@ const BARRIER_HEIGHT = 60;
 const ROAD_SPEED = 5;
 const BARRIER_SPAWN_RATE = 0.02;
 
-
-// EVENT BUS (unchanged)
 
 type GameEvent =
   | { type: 'CRASH' }
@@ -58,8 +54,6 @@ class EventBus {
 const eventBus = new EventBus();
 
 
-// GAME COMPONENT
-
 const Game: React.FC = () => {
   const { isLoggedIn } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -76,8 +70,6 @@ const Game: React.FC = () => {
     userAnswer: '',
   });
 
-
-  // KEYBOARD INPUT
  
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
@@ -99,7 +91,6 @@ const Game: React.FC = () => {
   }, [handleKeyPress]);
 
  
-  // GAME LOOP
  
   const gameLoop = useCallback(() => {
     const canvas = canvasRef.current;
@@ -108,11 +99,9 @@ const Game: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Road lines
     ctx.strokeStyle = '#555';
     ctx.lineWidth = 4;
     for (let i = 1; i < LANES; i++) {
@@ -125,7 +114,6 @@ const Game: React.FC = () => {
     }
     ctx.setLineDash([]);
 
-    // Spawn barriers
     if (Math.random() < BARRIER_SPAWN_RATE) {
       const lane = Math.floor(Math.random() * LANES);
       barriersRef.current.push({
@@ -136,16 +124,13 @@ const Game: React.FC = () => {
       });
     }
 
-    // Update & draw barriers
     barriersRef.current = barriersRef.current.filter((b) => {
       b.y += ROAD_SPEED;
 
-      // Draw
       const laneX = (canvas.width / LANES) * b.lane + (LANE_WIDTH - BARRIER_WIDTH) / 2;
       ctx.fillStyle = '#dc2626';
       ctx.fillRect(laneX, b.y, BARRIER_WIDTH, BARRIER_HEIGHT);
 
-      // Collision
       const carX = (canvas.width / LANES) * gameState.carLane + (LANE_WIDTH - CAR_WIDTH) / 2;
       const carY = canvas.height - CAR_HEIGHT - 50;
 
@@ -159,7 +144,6 @@ const Game: React.FC = () => {
         b.passed = true;
       }
 
-      // Score
       if (!b.passed && b.y > carY + CAR_HEIGHT) {
         b.passed = true;
         scoreRef.current += 10;
@@ -169,7 +153,6 @@ const Game: React.FC = () => {
       return b.y < canvas.height + BARRIER_HEIGHT;
     });
 
-    // Draw car
     const carX = (canvas.width / LANES) * gameState.carLane + (LANE_WIDTH - CAR_WIDTH) / 2;
     const carY = canvas.height - CAR_HEIGHT - 50;
     ctx.fillStyle = '#3b82f6';
@@ -187,8 +170,6 @@ const Game: React.FC = () => {
     };
   }, [gameLoop, gameState.phase]);
 
-
-  // EVENT LISTENERS
  
   useEffect(() => {
     const handleCrash = async () => {
@@ -240,7 +221,6 @@ const Game: React.FC = () => {
   }, []);
 
   
-  // GAME CONTROL
  
   const startGame = () => {
     barriersRef.current = [];
@@ -265,19 +245,16 @@ const Game: React.FC = () => {
   };
 
 
-  // RENDER
  
   if (!isLoggedIn) return null;
 
   return (
     <div className="relative w-full min-h-screen bg-gray-900 overflow-hidden flex flex-col items-center justify-center p-4">
-      {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-600 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-600 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
       </div>
 
-      {/* Score */}
       {gameState.phase === 'playing' && (
         <div className="absolute top-6 left-6 z-20 bg-gray-800 px-4 py-2 rounded-lg shadow-lg">
           <p className="text-xl font-bold text-white">
@@ -286,7 +263,6 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Ready Modal */}
       {gameState.phase === 'ready' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
@@ -305,7 +281,6 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Game Canvas */}
       {['playing', 'crashed'].includes(gameState.phase) && (
         <canvas
           ref={canvasRef}
@@ -316,7 +291,6 @@ const Game: React.FC = () => {
         />
       )}
 
-      {/* Heart Challenge Modal */}
       {gameState.phase === 'crashed' && gameState.challenge && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center">
@@ -346,7 +320,6 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Game Over */}
       {gameState.phase === 'gameover' && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center">
