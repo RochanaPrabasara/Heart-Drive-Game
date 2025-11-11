@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../auth';
 
@@ -91,9 +91,9 @@ const Login: React.FC = () => {
             </button>
             <p className="text-gray-300 text-sm text-center mt-4">
               Don't have an account?{' '}
-              <a href="/signup" className="text-red-500 hover:text-red-400 transition">
+              <Link to="/signup" className="text-red-500 hover:text-red-400 transition">
                 Sign up
-              </a>
+              </Link>
             </p>
           </form>
         </div>

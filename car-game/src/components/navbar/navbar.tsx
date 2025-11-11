@@ -2,6 +2,7 @@ import React from 'react';
 import { CarIcon, TrophyIcon, UserIcon, LogOutIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth';
+import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -45,9 +46,9 @@ const Navbar: React.FC = () => {
               </button>
             </>
           ) : (
-            <a href="/login" className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition">
+            <Link to="/login" className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition">
               Login
-            </a>
+            </Link>
           )}
         </div>
       </div>

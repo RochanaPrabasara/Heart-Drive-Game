@@ -13,7 +13,7 @@ const Home: React.FC = () => {
       </div>
 
       <div className="z-10 text-center px-4 flex flex-col items-center">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-red-500 to-pink-500">
           Heart Drive 
         </h1>
 
@@ -24,7 +24,7 @@ const Home: React.FC = () => {
 
         <a
           href="/login"
-          className="inline-flex items-center px-8 py-4 text-xl font-bold rounded-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transform hover:scale-105 transition duration-300 shadow-lg"
+          className="inline-flex items-center px-8 py-4 text-xl font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transform hover:scale-105 transition duration-300 shadow-lg"
         >
           <PlayIcon size={24} className="mr-2" />
           LOG IN TO PLAY
