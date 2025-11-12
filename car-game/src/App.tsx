@@ -5,6 +5,7 @@ import Navbar from './components/navbar/navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import SignUp from './pages/Signup';
+import GameHome from './pages/GameHome';
 import Game from './pages/Game';
 import { jwtDecode } from 'jwt-decode';
 import { AuthContext } from './auth';
@@ -70,9 +71,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route
-                path="/game"
-                element={isLoggedIn ? <Game /> : <Navigate to="/login" />}
+              <Route path="/gamehome" element={<GameHome />} />
+              <Route path="/game" element={isLoggedIn ? <Game /> : <Navigate to="/login" />}
               />
             </Routes>
           </div>

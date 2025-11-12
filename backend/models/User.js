@@ -18,9 +18,17 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: [true, 'Password required'],
     minlength: [6, 'Password must be at least 6 characters'],
   },
+  gamesPlayed: {
+    type: Number,
+    default: 0
+  },
+  highScore: {
+    type: Number,
+    default: 0
+  }
 });
 
 userSchema.pre('save', async function (next) {

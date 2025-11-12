@@ -57,7 +57,7 @@ const SignUp: React.FC = () => {
       </div>
       <div className="z-10 flex flex-col items-center justify-center w-full max-w-md">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-red-500 w-full text-center whitespace-nowrap">
-          Sign Up for Heart-Lifeline
+          Sign Up for Heart-Drive
         </h1>
         <div className="bg-gray-800 p-12 rounded-lg shadow-lg w-full max-w-md">
           <p className="text-gray-300 mb-8 text-lg text-center">

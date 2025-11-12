@@ -38,7 +38,7 @@ const Login: React.FC = () => {
       console.log('Token stored:', localStorage.getItem('token'));
       setIsLoggedIn(true);
       console.log('Navigating to /game');
-      navigate('/game', { replace: true });
+      navigate('/gamehome', { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Login error:', err.response?.data, err.response?.status);
@@ -61,7 +61,7 @@ const Login: React.FC = () => {
       </div>
       <div className="z-10 flex flex-col items-center justify-center w-full max-w-md">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-red-500 w-full text-center whitespace-nowrap">
-          Log In to Heart-Lifeline
+          Log In to Heart-Drive
         </h1>
         <div className="bg-gray-800 p-12 rounded-lg shadow-lg w-full max-w-md">
           <p className="text-gray-300 mb-8 text-lg text-center">
