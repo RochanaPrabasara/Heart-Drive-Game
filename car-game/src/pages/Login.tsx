@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../auth';
+import { useAuth } from '../auth/auth';
+import toast from 'react-hot-toast';   // <-- ADD
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -28,24 +29,26 @@ const Login: React.FC = () => {
     if (!validateInputs()) return;
 
     try {
-      console.log('Attempting login:', { username });
       const response = await axios.post('http://localhost:5000/api/auth/login', {
         username,
         password,
       });
-      console.log('Login response:', response.data);
+
       localStorage.setItem('token', response.data.token);
-      console.log('Token stored:', localStorage.getItem('token'));
       setIsLoggedIn(true);
-      console.log('Navigating to /game');
+
+      // SUCCESS TOAST
+      toast.success(`Welcome back, ${username} !`)
+
       navigate('/gamehome', { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.error('Login error:', err.response?.data, err.response?.status);
-        setError(err.response?.data?.message || 'Failed to log in. Please try again.');
+        const msg = err.response?.data?.message || 'Failed to log in. Please try again.';
+        setError(msg);
+        toast.error(msg);   // ERROR TOAST
       } else {
-        console.error('Unexpected error:', err);
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unexpected error occurred.');
+        toast.error('Something went wrong!');
       }
     }
   };
@@ -59,15 +62,19 @@ const Login: React.FC = () => {
           style={{ animationDelay: '1s' }}
         ></div>
       </div>
+
       <div className="z-10 flex flex-col items-center justify-center w-full max-w-md">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-red-500 w-full text-center whitespace-nowrap">
           Log In to Heart-Drive
         </h1>
+
         <div className="bg-gray-800 p-12 rounded-lg shadow-lg w-full max-w-md">
           <p className="text-gray-300 mb-8 text-lg text-center">
             Enter your credentials to play the game
           </p>
+
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <input
               type="text"
@@ -89,6 +96,7 @@ const Login: React.FC = () => {
             >
               Log In
             </button>
+
             <p className="text-gray-300 text-sm text-center mt-4">
               Don't have an account?{' '}
               <Link to="/signup" className="text-red-500 hover:text-red-400 transition">

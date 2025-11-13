@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';   // <-- ADD
 
 const SignUp: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -36,12 +37,19 @@ const SignUp: React.FC = () => {
         email,
         password,
       });
+
+      // SUCCESS TOAST
+      toast.success(`Account created! Welcome, ${username} !`)
+
       navigate('/login');
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Failed to sign up. Please try again.');
+        const msg = err.response?.data?.message || 'Failed to sign up. Please try again.';
+        setError(msg);
+        toast.error(msg);
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unexpected error occurred.');
+        toast.error('Something went wrong!');
       }
     }
   };
@@ -55,15 +63,19 @@ const SignUp: React.FC = () => {
           style={{ animationDelay: '1s' }}
         ></div>
       </div>
+
       <div className="z-10 flex flex-col items-center justify-center w-full max-w-md">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-8 text-red-500 w-full text-center whitespace-nowrap">
           Sign Up for Heart-Drive
         </h1>
+
         <div className="bg-gray-800 p-12 rounded-lg shadow-lg w-full max-w-md">
           <p className="text-gray-300 mb-8 text-lg text-center">
             Create an account to play the game
           </p>
+
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <input
               type="text"
@@ -92,6 +104,7 @@ const SignUp: React.FC = () => {
             >
               Sign Up
             </button>
+
             <p className="text-gray-300 text-sm text-center mt-4">
               Already have an account?{' '}
               <Link to="/login" className="text-red-500 hover:text-red-400 transition">

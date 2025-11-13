@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlayIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
   return (
@@ -22,13 +23,12 @@ const Home: React.FC = () => {
           challenges to achieve the highest score!
         </p>
 
-        <a
-          href="/login"
+        <Link to="/login"
           className="inline-flex items-center px-8 py-4 text-xl font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transform hover:scale-105 transition duration-300 shadow-lg"
         >
           <PlayIcon size={24} className="mr-2" />
           LOG IN TO PLAY
-        </a>
+        </Link>
 
 
         <div className="mt-12 flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">

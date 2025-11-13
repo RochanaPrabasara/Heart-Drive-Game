@@ -8,7 +8,7 @@ import SignUp from './pages/Signup';
 import GameHome from './pages/GameHome';
 import Game from './pages/Game';
 import { jwtDecode } from 'jwt-decode';
-import { AuthContext } from './auth';
+import { AuthContext } from './auth/auth';
 
 interface DecodedToken {
   userId: string;
@@ -65,7 +65,7 @@ function App() {
     <ErrorBoundary>
       <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
         <Router>
-          <div className="w-full min-h-screen bg-gray-900 flex flex-col">
+          <div className="w-full h-screen bg-gray-900 flex flex-col">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />

@@ -1,8 +1,7 @@
 import React from 'react';
-import { CarIcon, TrophyIcon, UserIcon, LogOutIcon } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../auth';
-import { Link } from 'react-router-dom';
+import { CarIcon, TrophyIcon, UserIcon, LogOutIcon, LogInIcon } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../../auth/auth';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const Navbar: React.FC = () => {
     navigate('/');
   };
 
-  // ✅ FIXED: Show auth options on BOTH gamehome AND game (play area)
+  // Show the three icons on the game pages
   const showAuthOptions = isLoggedIn && ['/gamehome', '/game'].includes(location.pathname);
 
   return (
@@ -27,6 +26,7 @@ const Navbar: React.FC = () => {
             Heart Drive
           </span>
         </Link>
+
         <div className="flex space-x-6 items-center">
           {showAuthOptions ? (
             <>
@@ -37,6 +37,7 @@ const Navbar: React.FC = () => {
                 <TrophyIcon size={18} />
                 <span>Scoreboard</span>
               </Link>
+
               <Link
                 to="/profile"
                 className="flex items-center space-x-1 text-red-100 hover:text-red-400 transition"
@@ -44,20 +45,23 @@ const Navbar: React.FC = () => {
                 <UserIcon size={18} />
                 <span>Profile</span>
               </Link>
+
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1 text-red-100 hover:text-red-400 transition"
+                className="flex items-center cursor-pointer space-x-1 text-red-100 hover:text-red-400 transition"
               >
                 <LogOutIcon size={18} />
                 <span>Logout</span>
               </button>
             </>
           ) : (
+            // NEW: Same style + LogInIcon
             <Link
               to="/login"
-              className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 px-6 py-2 rounded-md text-white font-semibold transition-all shadow-lg hover:shadow-xl"
+              className="flex items-center space-x-1 text-red-100 hover:text-red-400 transition"
             >
-              Login
+              <LogInIcon size={18} />
+              <span>Login</span>
             </Link>
           )}
         </div>
