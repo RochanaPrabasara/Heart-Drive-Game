@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../auth/auth';
 import toast from 'react-hot-toast';   // <-- ADD
 
+
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -39,6 +40,10 @@ const Login: React.FC = () => {
 
       // SUCCESS TOAST
       toast.success(`Welcome back, ${username} !`)
+
+      const audio = new Audio();
+      audio.play().catch(() => {});
+      audio.pause();
 
       navigate('/gamehome', { replace: true });
     } catch (err) {
@@ -92,7 +97,7 @@ const Login: React.FC = () => {
             />
             <button
               type="submit"
-              className="inline-flex items-center justify-center w-full px-6 py-3 text-lg font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transition duration-300 shadow-lg"
+              className="inline-flex cursor-pointer items-center justify-center w-full px-6 py-3 text-lg font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transition duration-300 shadow-lg"
             >
               Log In
             </button>

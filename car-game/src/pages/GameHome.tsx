@@ -4,6 +4,7 @@ import { PlayIcon, TrophyIcon, TargetIcon, ZapIcon } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../auth/auth';
 
+
 interface UserStats {
   username: string;
   highScore: number;

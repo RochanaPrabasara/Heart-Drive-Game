@@ -1,5 +1,6 @@
+// src/pages/Game.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, RotateCcw, ArrowLeft, X } from 'lucide-react'; // Added X icon
+import { AlertCircle, RotateCcw, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '../auth/auth';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,7 +15,7 @@ interface Barrier {
 }
 
 interface GameState {
-  phase: 'playing' | 'crashed' | 'gameover' | 'exit_confirm'; // Added exit_confirm
+  phase: 'playing' | 'crashed' | 'gameover' | 'exit_confirm';
   score: number;
   carLane: number;
   barriers: Barrier[];
@@ -22,7 +23,7 @@ interface GameState {
   userAnswer: string;
 }
 
-const LANES = 3;
+const LANES = 4;
 const LANE_WIDTH = 120;
 const CAR_WIDTH = 120;
 const CAR_HEIGHT = 110;
@@ -37,7 +38,7 @@ type GameEvent =
   | { type: 'HEART_ANSWER_CORRECT' }
   | { type: 'HEART_ANSWER_WRONG' }
   | { type: 'RESTART' }
-  | { type: 'EXIT_REQUEST' }; // Added exit request
+  | { type: 'EXIT_REQUEST' };
 
 class EventBus {
   private listeners: ((event: GameEvent) => void)[] = [];
@@ -63,9 +64,9 @@ const Game: React.FC = () => {
   const animationRef = useRef<number | null>(null);
   const barriersRef = useRef<Barrier[]>([]);
   const scoreRef = useRef(0);
-
   const carImageRef = useRef<HTMLImageElement | null>(null);
 
+  const [carImageReady, setCarImageReady] = useState(false);
   const [challenge, setChallenge] = useState<HeartChallenge | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [imageReady, setImageReady] = useState(false);
@@ -79,12 +80,61 @@ const Game: React.FC = () => {
     userAnswer: '',
   });
 
+  // AUDIO REFS
+  const bgAudioRef = useRef<HTMLAudioElement>(null);
+  const crashAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Load car image
   useEffect(() => {
     const img = new Image();
     img.src = '/images/car.png';
-    img.onload = () => (carImageRef.current = img);
-    img.onerror = () => console.warn('Car image not found! Falling back to blue rectangle.');
+
+    const onLoad = () => {
+      carImageRef.current = img;
+      setCarImageReady(true);
+    };
+
+    const onError = () => {
+      console.warn('Car image not found – using fallback');
+      setCarImageReady(true);
+    };
+
+    img.addEventListener('load', onLoad);
+    img.addEventListener('error', onError);
+
+    return () => {
+      img.removeEventListener('load', onLoad);
+      img.removeEventListener('error', onError);
+    };
   }, []);
+
+  
+  //  BACKGROUND MUSIC – ONLY plays when phase === 'playing'
+  // No global click listener → clicking input won't restart
+
+  useEffect(() => {
+    const bg = bgAudioRef.current;
+    if (!bg) return;
+
+    if (gameState.phase === 'playing') {
+      bg.volume = 0.5;
+      bg.play().catch(() => {
+        const unlock = () => {
+          bg.play().catch(() => {});
+          document.removeEventListener('click', unlock);
+          document.removeEventListener('keydown', unlock);
+        };
+        document.addEventListener('click', unlock, { once: true });
+        document.addEventListener('keydown', unlock, { once: true });
+      });
+    } else {
+      bg.pause();
+    }
+
+    return () => {
+      bg.pause();
+    };
+  }, [gameState.phase]);
 
   const saveScore = async (score: number) => {
     try {
@@ -95,7 +145,6 @@ const Game: React.FC = () => {
         { score },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log('Score saved:', score);
     } catch (e) {
       console.error('Failed to save score:', e);
     }
@@ -104,13 +153,12 @@ const Game: React.FC = () => {
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
       if (gameState.phase !== 'playing') return;
-      
+
       if (e.key === 'ArrowLeft' && gameState.carLane > 0)
         setGameState((s) => ({ ...s, carLane: s.carLane - 1 }));
       if (e.key === 'ArrowRight' && gameState.carLane < LANES - 1)
         setGameState((s) => ({ ...s, carLane: s.carLane + 1 }));
-      
-      // ESC now shows confirmation
+
       if (e.key === 'Escape') {
         eventBus.publish({ type: 'EXIT_REQUEST' });
       }
@@ -184,25 +232,38 @@ const Game: React.FC = () => {
 
     const carX = (canvas.width / LANES) * gameState.carLane + (LANE_WIDTH - CAR_WIDTH) / 2;
     const carY = canvas.height - CAR_HEIGHT - 50;
-    if (carImageRef.current) {
+
+    if (carImageReady && carImageRef.current) {
       ctx.drawImage(carImageRef.current, carX, carY, CAR_WIDTH, CAR_HEIGHT);
-    } else {
-      ctx.fillStyle = '#3b82f6';
-      ctx.fillRect(carX, carY, CAR_WIDTH, CAR_HEIGHT);
+    } else if (!carImageReady) {
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Loading car...', carX + CAR_WIDTH / 2, carY + CAR_HEIGHT / 2);
     }
 
     animationRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState.carLane, gameState.phase]);
+  }, [gameState.carLane, gameState.phase, carImageReady]);
 
   useEffect(() => {
-    if (gameState.phase === 'playing') animationRef.current = requestAnimationFrame(gameLoop);
+    if (gameState.phase === 'playing' && carImageReady) {
+      animationRef.current = requestAnimationFrame(gameLoop);
+    }
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [gameLoop, gameState.phase]);
+  }, [gameLoop, gameState.phase, carImageReady]);
 
+  // EVENT HANDLERS
   useEffect(() => {
     const handleCrash = async () => {
+      bgAudioRef.current?.pause();
+      const crash = crashAudioRef.current;
+      if (crash) {
+        crash.currentTime = 0;
+        crash.play().catch(() => {});
+      }
+
       setGameState((s) => ({ ...s, phase: 'crashed', challenge: null, userAnswer: '' }));
       setIsLoading(true);
       setImageReady(false);
@@ -231,15 +292,16 @@ const Game: React.FC = () => {
       }));
       setImageReady(false);
       setChallenge(null);
+      bgAudioRef.current?.play();
     };
 
     const handleHeartWrong = () => {
-      saveScore(gameState.score); // Score saved here
+      saveScore(gameState.score);
       setGameState((s) => ({ ...s, phase: 'gameover' }));
     };
 
     const handleExitRequest = () => {
-      saveScore(gameState.score); // Score saved here too!
+      saveScore(gameState.score);
       setGameState((s) => ({ ...s, phase: 'exit_confirm' }));
     };
 
@@ -256,6 +318,7 @@ const Game: React.FC = () => {
       });
       setImageReady(false);
       setChallenge(null);
+      bgAudioRef.current?.play();
     };
 
     const unsubscribe = eventBus.subscribe((e) => {
@@ -263,7 +326,7 @@ const Game: React.FC = () => {
       if (e.type === 'BARRIER_PASSED') handleBarrierPassed(e);
       if (e.type === 'HEART_ANSWER_CORRECT') handleHeartCorrect();
       if (e.type === 'HEART_ANSWER_WRONG') handleHeartWrong();
-      if (e.type === 'EXIT_REQUEST') handleExitRequest(); // New handler
+      if (e.type === 'EXIT_REQUEST') handleExitRequest();
       if (e.type === 'RESTART') handleRestart();
     });
     return () => unsubscribe();
@@ -288,7 +351,6 @@ const Game: React.FC = () => {
     navigate('/gamehome');
   };
 
-  // NEW: Exit confirmation handlers
   const handleConfirmExit = async () => {
     await saveScore(gameState.score);
     navigate('/gamehome');
@@ -296,6 +358,7 @@ const Game: React.FC = () => {
 
   const handleCancelExit = () => {
     setGameState((s) => ({ ...s, phase: 'playing' }));
+    bgAudioRef.current?.play();
   };
 
   if (!isLoggedIn) {
@@ -310,6 +373,10 @@ const Game: React.FC = () => {
 
   return (
     <div className="relative w-full min-h-screen bg-gray-900 overflow-hidden flex flex-col items-center justify-center p-4">
+      {/* AUDIO */}
+      <audio ref={bgAudioRef} src="/sounds/home-bg.mp3" loop />
+      <audio ref={crashAudioRef} src="/sounds/crash.mp3" />
+
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-600 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
@@ -328,12 +395,12 @@ const Game: React.FC = () => {
       {/* Controls */}
       {gameState.phase === 'playing' && (
         <div className="absolute top-6 right-6 z-20 bg-gray-800 px-4 py-2 rounded-lg shadow-lg text-sm text-gray-300">
-          ← → Move | ESC Exit
+          Left Arrow Right Arrow Move | ESC Exit
         </div>
       )}
 
       {/* Canvas */}
-      {['playing', 'crashed'].includes(gameState.phase) && (
+      {['playing', 'crashed'].includes(gameState.phase) && carImageReady && (
         <canvas
           ref={canvasRef}
           width={LANE_WIDTH * LANES}
@@ -343,10 +410,10 @@ const Game: React.FC = () => {
         />
       )}
 
-      {/* Heart Challenge Modal */}
+      {/* Heart Challenge Modal – WITH ANIMATION */}
       {isHeartModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-lg h-[520px] flex flex-col items-center text-center transform transition-all duration-300 ease-out animate-in fade-in zoom-in-95">
+          <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-lg h-[520px] flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
             <AlertCircle className="mb-4 text-red-500 animate-pulse" size={48} />
             <h2 className="text-3xl font-bold text-white mb-2">Crash! Count the Hearts!</h2>
             <p className="text-sm text-gray-400 mb-4">Answer correctly to keep driving.</p>
@@ -378,12 +445,12 @@ const Game: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && submitHeartAnswer()}
                 placeholder="How many hearts?"
                 disabled={isLoadingImage}
-                className="w-full px-4 py-3 mb-4 bg-gray-700 text-white rounded-lg text-center text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 mb-4 bg-gray-700 text-white rounded-lg text-center text-xl disabled:opacity-50"
               />
               <button
                 onClick={submitHeartAnswer}
                 disabled={isLoadingImage}
-                className="w-full cursor-pointer py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition disabled:opacity-50"
               >
                 Submit Answer
               </button>
@@ -392,10 +459,10 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* NEW: Exit Confirmation Modal */}
+      {/* Exit Modal – WITH ANIMATION */}
       {isExitModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center transform transition-all duration-300 ease-out animate-in fade-in zoom-in-95">
+          <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center animate-in fade-in zoom-in-95 duration-300">
             <X className="mx-auto mb-4 text-yellow-500" size={48} />
             <h2 className="text-3xl font-bold text-white mb-4">Exit Game?</h2>
             <p className="text-xl text-gray-300 mb-2">
@@ -405,14 +472,14 @@ const Game: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={handleConfirmExit}
-                className="w-full cursor-pointer py-3 bg-linear-to-r from-orange-600 to-orange-500 text-white font-bold rounded-lg hover:from-orange-500 hover:to-orange-400 transition shadow-lg flex items-center justify-center"
+                className="w-full cursor-pointer py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold rounded-lg hover:from-orange-500 hover:to-orange-400 transition shadow-lg flex items-center justify-center"
               >
                 <ArrowLeft className="mr-2" size={20} />
                 Exit to Home
               </button>
               <button
                 onClick={handleCancelExit}
-                className="w-full cursor-pointer py-3 bg-linear-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg flex items-center justify-center"
+                className="w-full cursor-pointer py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
               >
                 Continue Playing
               </button>
@@ -421,26 +488,26 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Game Over Modal */}
+      {/* Game Over Modal – WITH ANIMATION */}
       {isGameOverModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center transform transition-all duration-300 ease-out animate-in fade-in zoom-in-95">
-            <h2 className="text-5xl font-bold text-red-500 mb-4">Game Over !</h2>
+          <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center animate-in fade-in zoom-in-95 duration-300">
+            <h2 className="text-5xl font-bold text-red-500 mb-4">Game Over!</h2>
             <p className="text-2xl text-white mb-2">
               Final Score: <span className="text-yellow-400">{gameState.score}</span>
             </p>
-            <p className="text-lg text-gray-400 mb-8">Wrong heart count !</p>
+            <p className="text-lg text-gray-400 mb-8">Wrong heart count!</p>
             <div className="space-y-3">
               <button
                 onClick={handlePlayAgain}
-                className="w-full cursor-pointer py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-500 hover:to-indigo-500 transition shadow-lg flex items-center justify-center"
+                className="w-full py-3 cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-500 hover:to-indigo-500 transition shadow-lg flex items-center justify-center"
               >
                 <RotateCcw className="mr-2" size={20} />
                 Play Again
               </button>
               <button
                 onClick={handleBackToHome}
-                className="w-full cursor-pointer flex items-center justify-center py-3 bg-linear-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
+                className="w-full cursor-pointer flex items-center justify-center py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
               >
                 <ArrowLeft className="mr-2" size={20} />
                 Back to Home

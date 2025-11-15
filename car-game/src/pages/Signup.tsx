@@ -100,7 +100,7 @@ const SignUp: React.FC = () => {
             />
             <button
               type="submit"
-              className="inline-flex items-center justify-center w-full px-6 py-3 text-lg font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transition duration-300 shadow-lg"
+              className="inline-flex cursor-pointer items-center justify-center w-full px-6 py-3 text-lg font-bold rounded-full bg-linear-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 transition duration-300 shadow-lg"
             >
               Sign Up
             </button>

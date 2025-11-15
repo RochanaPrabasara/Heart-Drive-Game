@@ -10,6 +10,7 @@ import Game from './pages/Game';
 import { jwtDecode } from 'jwt-decode';
 import { AuthContext } from './auth/auth';
 
+
 interface DecodedToken {
   userId: string;
   exp: number;
