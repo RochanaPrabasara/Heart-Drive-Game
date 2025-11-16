@@ -450,7 +450,7 @@ const Game: React.FC = () => {
               <button
                 onClick={submitHeartAnswer}
                 disabled={isLoadingImage}
-                className="w-full cursor-pointer py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition disabled:opacity-50"
+                className="w-full cursor-pointer py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition disabled:opacity-50"
               >
                 Submit Answer
               </button>
@@ -472,14 +472,14 @@ const Game: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={handleConfirmExit}
-                className="w-full cursor-pointer py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold rounded-lg hover:from-orange-500 hover:to-orange-400 transition shadow-lg flex items-center justify-center"
+                className="w-full cursor-pointer py-3 bg-linear-to-r from-orange-600 to-orange-500 text-white font-bold rounded-lg hover:from-orange-500 hover:to-orange-400 transition shadow-lg flex items-center justify-center"
               >
                 <ArrowLeft className="mr-2" size={20} />
                 Exit to Home
               </button>
               <button
                 onClick={handleCancelExit}
-                className="w-full cursor-pointer py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
+                className="w-full cursor-pointer py-3 bg-linear-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
               >
                 Continue Playing
               </button>
@@ -488,7 +488,7 @@ const Game: React.FC = () => {
         </div>
       )}
 
-      {/* Game Over Modal – WITH ANIMATION */}
+      {/* Game Over Modal */}
       {isGameOverModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-10 max-w-md w-full text-center animate-in fade-in zoom-in-95 duration-300">
@@ -500,14 +500,14 @@ const Game: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={handlePlayAgain}
-                className="w-full py-3 cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-500 hover:to-indigo-500 transition shadow-lg flex items-center justify-center"
+                className="w-full py-3 cursor-pointer bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-500 hover:to-indigo-500 transition shadow-lg flex items-center justify-center"
               >
                 <RotateCcw className="mr-2" size={20} />
                 Play Again
               </button>
               <button
                 onClick={handleBackToHome}
-                className="w-full cursor-pointer flex items-center justify-center py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
+                className="w-full cursor-pointer flex items-center justify-center py-3 bg-linear-to-r from-gray-600 to-gray-700 text-white font-bold rounded-lg hover:from-gray-500 hover:to-gray-600 transition shadow-lg"
               >
                 <ArrowLeft className="mr-2" size={20} />
                 Back to Home

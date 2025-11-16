@@ -1,5 +1,5 @@
 import React from 'react';
-import { CarIcon, TrophyIcon, UserIcon, LogOutIcon, LogInIcon } from 'lucide-react';
+import { CarIcon,LogOutIcon, LogInIcon } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/auth';
 
@@ -30,21 +30,6 @@ const Navbar: React.FC = () => {
         <div className="flex space-x-6 items-center">
           {showAuthOptions ? (
             <>
-              <Link
-                to="/scoreboard"
-                className="flex items-center space-x-1 text-red-100 hover:text-red-400 transition"
-              >
-                <TrophyIcon size={18} />
-                <span>Scoreboard</span>
-              </Link>
-
-              <Link
-                to="/profile"
-                className="flex items-center space-x-1 text-red-100 hover:text-red-400 transition"
-              >
-                <UserIcon size={18} />
-                <span>Profile</span>
-              </Link>
 
               <button
                 onClick={handleLogout}

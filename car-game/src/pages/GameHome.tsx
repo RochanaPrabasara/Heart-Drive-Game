@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PlayIcon, TrophyIcon, TargetIcon, ZapIcon } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../auth/auth';
@@ -161,12 +161,6 @@ const GameHome: React.FC = () => {
           <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-red-400">Top Players</h2>
-              <Link
-                to="/scoreboard"
-                className="text-sm text-red-400 hover:text-red-300 transition-colors"
-              >
-                View Full Leaderboard →
-              </Link>
             </div>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {leaderboard.length > 0 ? (
